@@ -123,29 +123,6 @@ def make_graph(A,y):
   return g
 
 
-def change_homophily_spectral(B,Pi,d,h):
-  """
-  Change the homophily of a graph by tuning the eigenvalues of the SBM model, by
-  scaling the non-leading eigenvalues by a constant factor h.
-
-  Args:
-    B: Affinity matrix of classes
-    Pi: Class Distribution diagonal matrix
-    d: average degree of graph
-    h: hyperparameter
-  Returns:
-    B_new: Affinity matrix of classes
-  
-  """
-  b_sum = B.sum()
-  l,Q = torch.linalg.eigh(B)
-  l[:-1] = h*l[:-1]
-  B_new = Q@l.diag()@Q.T
-  sf = b_sum/B_new.sum()
-  B_new = sf*B_new
-  return B_new
-
-
 def change_homophily(B,Pi,d,h):
   """
   Change the homophily of a graph by tuning the eigenvalues of the SBM model, by

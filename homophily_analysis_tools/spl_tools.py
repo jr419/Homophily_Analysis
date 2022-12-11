@@ -209,8 +209,12 @@ def run_full_simulation(g,mode='rewiring',k=50,extreme_scale = 10,num_saves=20,N
 
   Args:
       g: dgl graph
+      mode: 'SBM' or 'rewiring'
       k: number of graphs to try to generate
       extreme_scale: factor to change the eigenvalues by to achieve extreme (low/high) homophily
+      num_saves: number of graphs to save
+      N_max: maximum number of nodes to compute shortest paths for
+    
 
   Returns:
       g_list: list of dgl graphs
