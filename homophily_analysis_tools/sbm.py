@@ -37,11 +37,12 @@ def infer_Z(y):
   return Z
 
 
-def sbm(g):
+def sbm(g,p=1):
   """
   MLE implementation of SBM coarsening of a graph
   Args:
     g: dgl graph
+    p: p-hop neighbourhoods to consider
   Returns:
     S: Class Balanced Affinity matrix
     B: Affinity matrix of classes
@@ -57,17 +58,19 @@ def sbm(g):
   U = torch.outer(u,u)
 
   Pi = (Z.T@u).diag()/n
-  
-  B = Z.T@A@Z*n/(Z.T@U@Z)
+  A_p = torch.matrix_power(A,p)
+  B = Z.T@A_p@Z*n/(Z.T@U@Z)
   return B, Pi
 
 
-def sbm_dc(g):
+def sbm_dc(g,mode='sym',p=1):
   """
   Implementation of the degree correlated SBM coarsening of a graph.
 
   Args:
     g: dgl graph
+    mode: 'rw' for random walk, 'sym' for symmetric
+    p: p-hop neighbourhoods to consider
   Returns:
     M: Affinity matrix of classes, equals the number of edges between nodes of any two classes
     Pi: Class Distribution diagonal matrix
@@ -83,11 +86,23 @@ def sbm_dc(g):
   U = torch.outer(u,u)
 
   Z = infer_Z(y)
-  d_inv_sqrt = (1/d.float().sqrt())
-  d_inv_sqrt[d==0] = 1
+  d_inv = 1/d.float()
+  d_inv[d==0] = 1
+  d_inv_sqrt = d_inv.sqrt()
+  d_mean = ((d**p).mean())**(1/p)
   Pi = (Z.T@u).diag()/n
-  A_hat = d_inv_sqrt[:,None]*A*d_inv_sqrt[None,:]
-  M = Z.T@A_hat@Z*n/(Z.T@U@Z)
-  # theta is given by the degree of the node i divided by the sum of all degrees of the smae label as node i
-  kappa = torch.stack([torch.sum(d[y == c]) for c in g.ndata['label'].unique()])/(Z.T@u)
+
+  if mode == 'sym':
+    A_hat = d_inv_sqrt[:,None]*A*d_inv_sqrt[None,:]
+  elif mode == 'rw':
+    A_hat = d_inv[:,None]*A
+  elif mode == 'edge':
+    A_hat = A/d_mean
+  else:
+    raise ValueError('mode must be either "edge","rw", "sym"')
+
+  A_hat_p = torch.matrix_power(A_hat,p)
+  M = Z.T@A_hat_p@Z*n/(Z.T@U@Z)
+
+  kappa = torch.stack([torch.sum(d[y == c]**p) for c in g.ndata['label'].unique()])/(Z.T@u)
   return M, Pi, kappa

@@ -23,7 +23,7 @@ from dgl.nn import GraphConv, TAGConv, NNConv, EdgeWeightNorm, RelGraphConv, GAT
 import itertools
 
 from homophily_analysis_tools.spl_tools import calculate_geodesics_homophily, test_gnn_vs_homophily,shotest_paths_dist
-from homophily_analysis_tools.homophily_metrics import node_homophily, class_homophily, edge_homophily
+from homophily_analysis_tools.homophily_metrics import homophily
 
 
 def plot_mean_spl_comparison(g0_list,mean_spl_list=None,mean_intra_spl_list=None,p=1):
@@ -44,7 +44,7 @@ def plot_mean_spl_comparison(g0_list,mean_spl_list=None,mean_intra_spl_list=None
   """
   h_list = []
   for g in g0_list:
-    h_list.append(node_homophily(g,p=p))
+    h_list.append(homophily(g,p=p))
   
   d_list = []
   n = g0_list[0].number_of_nodes()
@@ -83,7 +83,7 @@ def plot_test_gnn_vs_homophily(g_list,acc_list,p = 1):
 
   h_list = []
   for g in g_list:
-    h_list.append(node_homophily(g, p=p))
+    h_list.append(homophily(g, p=p))
   
   fig = plt.figure(figsize=(10,6))
   ax = fig.add_subplot(111)
@@ -142,7 +142,7 @@ def plot_homophily_degree(g0_list,p=1):
   d_mean_list = []
   d_max_list = []
   for g in g0_list:
-    h_list.append(node_homophily(g,p=p))
+    h_list.append(homophily(g,p=p))
     d_mean_list.append(g.in_degrees().float().mean())
     d_max_list.append(g.in_degrees().float().max())
   fig = plt.figure(figsize=(10,6))
@@ -196,7 +196,7 @@ def plot_degree_distribution_comparison(g_list):
     #dynamically change the intensity of the color of the bar chart based on the average degree of the graph
     # change intensity by changing alpha 
     alpha = 0.5+0.25*(1-g.in_degrees().float().max()/d0)
-    plt.hist(d_list,bins=100,alpha=alpha.item(),label='h = '+str(round(node_homophily(g).item(),2)),density=True)
+    plt.hist(d_list,bins=100,alpha=alpha.item(),label='h = '+str(round(homophily(g).item(),2)),density=True)
 
     #indicate the average degree of each graph on the x-axis with a dashed red line
     plt.axvline(x=g.in_degrees().float().mean(),color='C'+str(i),linestyle='--')
@@ -233,7 +233,7 @@ def plot_mean_spl_difference(g_list,mean_spl_list,mean_intra_spl_list):
     ax.grid(color='gray', linestyle='-', linewidth=0.1)
     ax.set_xlabel('Homophily')
     ax.set_ylabel('Mean shortest path - Mean intra shortest path')
-    h_list = [node_homophily(g).item() for g in g_list]
+    h_list = [homophily(g).item() for g in g_list]
     mean_spl_arr = np.array(mean_spl_list)
     mean_intra_spl_arr = np.array(mean_intra_spl_list)
     ax.plot(h_list,mean_spl_arr-mean_intra_spl_arr,'o',label='Mean shortest path length difference')
@@ -248,9 +248,9 @@ def do_plots_compact(g_list,g_seed,mean_spl_list,mean_intra_spl_list,acc_list,p=
     ax[0].set_title('Mean shortest path length')
     ax[0].set_xlabel(f'Homophily Level (p={p})')
     ax[0].set_ylabel('Mean shortest path length')
-    h_list = [node_homophily(g,p=p) for g in g_list]
+    h_list = [homophily(g,p=p) for g in g_list]
 
-    h_seed = node_homophily(g_seed,p=p)
+    h_seed = homophily(g_seed,p=p)
     mean_spl_seed, mean_intra_spl_seed = calculate_geodesics_homophily([g_seed])
     acc_seed = test_gnn_vs_homophily([g_seed])
     
@@ -304,11 +304,11 @@ def plot_intra_full_spl_ratio(g_list,g_seed,mean_spl_list,mean_intra_spl_list,p=
   ax.grid(color='gray', linestyle='-', linewidth=0.1)
   ax.set_xlabel(f'Homophily Level (p={p})')
   ax.set_ylabel('Mean intra shortest path / Mean shortest path')
-  h_list = [node_homophily(g,p=p).item() for g in g_list]
+  h_list = [homophily(g,p=p).item() for g in g_list]
   mean_spl_arr = np.array(mean_spl_list)
   mean_intra_spl_arr = np.array(mean_intra_spl_list)
   ax.plot(h_list,mean_intra_spl_arr/mean_spl_arr,'.',label='Mean intra shortest path / Mean shortest path')
-  h_seed = node_homophily(g_seed,p=p)
+  h_seed = homophily(g_seed,p=p)
   mean_spl_seed, mean_intra_spl_seed = calculate_geodesics_homophily([g_seed])
   ax.plot(h_seed,mean_intra_spl_seed[0]/mean_spl_seed[0],'*',color='red',label='Seed graph')
   ax.legend()
@@ -428,11 +428,11 @@ def plot_intra_full_spl_ratio_multiple(g_lists, g_seeds,mean_spl_lists,mean_intr
     ax[i].set_xlabel(f'Homophily Level (p={p})')
     ax[i].set_ylabel('Mean intra shortest path / Mean shortest path')
     ax[i].set_title(f'Graph {i+1}')
-    h_list = [node_homophily(g,p=p) for g in g_lists[i]]
+    h_list = [homophily(g,p=p) for g in g_lists[i]]
     mean_spl_arr = np.array(mean_spl_lists[i])
     mean_intra_spl_arr = np.array(mean_intra_spl_lists[i])
     ax[i].plot(h_list,mean_intra_spl_arr/mean_spl_arr,'.',label='Mean intra shortest path / Mean shortest path')
-    h_seed = node_homophily(g_seeds[i],p=p)
+    h_seed = homophily(g_seeds[i],p=p)
     mean_spl_seed, mean_intra_spl_seed = calculate_geodesics_homophily([g_seeds[i]])
     ax[i].plot(h_seed,mean_intra_spl_seed[0]/mean_spl_seed[0],'*',color='red',label='Seed graph')
     ax[i].legend()
@@ -443,11 +443,11 @@ def plot_intra_full_spl_ratio_multiple(g_lists, g_seeds,mean_spl_lists,mean_intr
   ax[-1].title.set_text('All graphs')
   ax[-1].set_ylabel('Mean intra shortest path / Mean shortest path')
   for i in range(len(g_seeds)):
-    h_list = [node_homophily(g,p=p) for g in g_lists[i]]
+    h_list = [homophily(g,p=p) for g in g_lists[i]]
     mean_spl_arr = np.array(mean_spl_lists[i])
     mean_intra_spl_arr = np.array(mean_intra_spl_lists[i])
     ax[-1].plot(h_list,mean_intra_spl_arr/mean_spl_arr,'.',label=f'Graph {i+1}')
-    h_seed = node_homophily(g_seeds[i],p=p)
+    h_seed = homophily(g_seeds[i],p=p)
     mean_spl_seed, mean_intra_spl_seed = calculate_geodesics_homophily([g_seeds[i]])
     ax[-1].plot(h_seed,mean_intra_spl_seed[0]/mean_spl_seed[0],'*',color='red',label='Seed graph')
   plt.show()
@@ -530,12 +530,13 @@ def plot_spl_predictions(g,model):
 # compare p-level homophily of different types for different graphs, ovee p - the size of the neighbourhood to consider.
 # for each graph in g_list, plot the p-level homophily over p on the the same plot
 # do seperate plots for different variants of homohpliy
-def plot_p_level_homophily(g_list, homophily_type='edge',class_normalised=False):
+def plot_p_level_homophily(g_list, node_h_type = 'symmetric', homophily_type='edge',class_normalised=False):
     """
     Plot the p-level homophily of the graphs in g_list as a function of p - the size of the neighbourhood to consider
     
     Args:
         g_list: list of dgl graphs
+        node_h_type: type of node homophily to calculate, one of 'symmetric', 'random walk'
         homophily_type: type of homophily to calculate, one of 'edge', 'node'
         class_normalised: whether to normalise the class distribution of the neighbourhoods before calculating homophily
     Returns:
@@ -549,9 +550,11 @@ def plot_p_level_homophily(g_list, homophily_type='edge',class_normalised=False)
     ax.set_title(f'{"class normalised"*class_normalised} {homophily_type} homophily')
     for i,g in enumerate(g_list):
         if homophily_type == 'edge':
-            h_list = [edge_homophily(g,p=p,class_normalised=class_normalised) for p in range(1,10)]
-        elif homophily_type == 'node':
-            h_list = [node_homophily(g,p=p,class_normalised=class_normalised) for p in range(1,10)]
+            h_list = [homophily(g,p=p,type='edge',class_normalised=class_normalised) for p in range(1,10)]
+        elif homophily_type == 'random walk':
+            h_list = [homophily(g,p=p,type='rw',class_normalised=class_normalised) for p in range(1,10)]
+        elif homophily_type == 'symmetric':
+            h_list = [homophily(g,p=p,type='sym',class_normalised=class_normalised) for p in range(1,10)]
         ax.plot(range(1,10),h_list,label=f'Graph {i+1}')
     ax.legend()
     plt.show()

@@ -37,17 +37,17 @@ def edge_homophily(g,p=1,class_normalised=True):
   Returns:
     h: edge homophily of graph
   """
-  B, Pi = sbm(g)
+  B, Pi = sbm(g,p)
   pi = Pi.diag()
-  B_p = torch.matrix_power(B,p)
+
   if class_normalised:
-    h = B_p.trace()/B_p.sum()
+    h = B.trace()/B.sum()
   else:
-    h = (Pi@B_p@Pi).trace()/(pi.T@B_p@pi)
+    h = (Pi@B@Pi).trace()/(pi.T@B@pi)
   return h
 
 
-def node_homophily(g,p=1,class_normalised=False):
+def homophily(g,p=1,type='rw',class_normalised=False):
   """
   Calculate the edge homophily of a graph, defined as the average of the number of edges between nodes of the same class. 
   Optionally take in a power p to calculate the homophilly over a p-hop neighbourhood.
@@ -55,17 +55,19 @@ def node_homophily(g,p=1,class_normalised=False):
   Args:
     g: dgl graph
     p: size of neighbourhood to calculate homophily over
+    adj_type: adjacency matrix type to use, either 'sym', 'rw' or 'edge'
 
   Returns:
     h: edge homophily of graph
   """
-  B, Pi,kappa = sbm_dc(g)
+  B, Pi,_ = sbm_dc(g,mode=type,p=p)
   pi = Pi.diag()
-  B_p = torch.matrix_power(B,p)
+  n = g.number_of_nodes()
+
   if class_normalised:
-    h = B_p.trace()/B_p.sum()
+    h = B.trace()
   else:
-    h = (Pi@B_p@Pi).trace()/(pi.T@B_p@pi)
+    h = (Pi@B@Pi).trace()
   return h
 
 
@@ -134,5 +136,8 @@ def graph_summary(g_list):
     print('Class Dist: ',class_dist)
 
 
-    print('Edge Homophily: ', edge_homophily(g).item())
-    print('Class Normalised Homophily: ', class_homophily(g).item())
+    print('Edge Homophily (p=1): ', homophily(g,type='edge').item())
+    print('Node Homophily (p=1): ', homophily(g,type='sym').item())
+    print('Edge Homophily (p=2): ', homophily(g,type='edge',p=2).item())
+    print('Node Homophily (p=2): ', homophily(g,type='sym',p=2).item())
+

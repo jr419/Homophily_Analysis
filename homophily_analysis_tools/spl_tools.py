@@ -23,7 +23,7 @@ from dgl.nn import GraphConv, TAGConv, NNConv, EdgeWeightNorm, RelGraphConv, GAT
 import itertools
 
 
-from homophily_analysis_tools.homophily_metrics import class_homophily, edge_homophily, node_homophily
+from homophily_analysis_tools.homophily_metrics import homophily
 from homophily_analysis_tools.gnn_models import train_GCN_g
 from homophily_analysis_tools.generate_synthetic_graphs import gen_synthetic_rewired_graph,gen_synthetic_SBM_graph_list
 
@@ -252,7 +252,7 @@ def calculate_homophily(g_list):
   """
   h_list = []
   for g in tqdm(g_list):
-    h_list.append(class_homophily(g))
+    h_list.append(homophily(g))
   return h_list
 
 

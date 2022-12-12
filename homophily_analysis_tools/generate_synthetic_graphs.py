@@ -23,7 +23,7 @@ from dgl.nn import GraphConv, TAGConv, NNConv, EdgeWeightNorm, RelGraphConv, GAT
 import itertools
 
 from homophily_analysis_tools.datasets import add_train_val_test_masks
-from homophily_analysis_tools.homophily_metrics import class_homophily, edge_homophily, node_homophily
+from homophily_analysis_tools.homophily_metrics import homophily
 from homophily_analysis_tools.sbm import infer_Z, sbm_dc, sbm
 
 def generate_Z(Pi,n):
@@ -253,7 +253,7 @@ def gen_synthetic_rewired_graph(g0,h=1,N_max=10000,num_saves=20):
   interval = N_max//num_saves
 
   g = g0.clone()
-  h0 = class_homophily(g)
+  h0 = homophily(g)
   n = g.number_of_nodes()
   classes = g.ndata['label'].unique()
 
@@ -299,7 +299,7 @@ def gen_synthetic_rewired_graph(g0,h=1,N_max=10000,num_saves=20):
     
     if cnt%interval==0:
 
-      h0 = class_homophily(g)
+      h0 = homophily(g)
       h_list.append(h0)
       g_list.append(g)
       print(f"{cnt//interval+1}/{N_max//interval}) {h0}")
