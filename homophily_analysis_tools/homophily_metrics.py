@@ -47,7 +47,7 @@ def edge_homophily(g,p=1,class_normalised=True):
   return h
 
 
-def homophily(g,p=1,type='rw',class_normalised=False):
+def homophily(g,p=1,type='sym',class_normalised=False):
   """
   Calculate the edge homophily of a graph, defined as the average of the number of edges between nodes of the same class. 
   Optionally take in a power p to calculate the homophilly over a p-hop neighbourhood.
@@ -65,9 +65,9 @@ def homophily(g,p=1,type='rw',class_normalised=False):
   n = g.number_of_nodes()
 
   if class_normalised:
-    h = B.trace()
+    h = B.trace()/B.sum()
   else:
-    h = (Pi@B@Pi).trace()
+    h = (Pi@B@Pi).trace()/(Pi@B@Pi).sum()
   return h
 
 
